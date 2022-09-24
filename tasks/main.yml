@@ -1,0 +1,6 @@
+---
+- name: Install docker and depancies on debian
+  import_tasks: install_debian.yml
+  tags:
+  - ansible_headscale:install_debian
+  when: ansible_distribution == "Debian" or "Ubuntu"

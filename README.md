@@ -14,7 +14,7 @@ Role Variables
 WIP
 
 
-EAdd in your playbooks requirements
+Add in your playbooks requirements
 ----------------
 
 ```yaml

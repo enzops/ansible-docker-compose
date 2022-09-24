@@ -1,0 +1,39 @@
+---
+- name: Get DEB architecture
+  shell: dpkg --print-architecture
+  register: deb_architecture
+
+- name: Remove old versions
+  ansible.builtin.apt:
+    name: "{{ docker_old_pkgs }}"
+    state: absent
+    update_cache: yes
+  loop: "{{ docker_old_pkgs }}"
+  when: docker_uninstall
+
+- name: Create keyring folder
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker gpg key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
+    dest: /tmp/dockergpg
+
+- name: De-Armor Docker GPG key
+  ansible.builtin.shell: gpg --dearmor < /tmp/dockergpg > /etc/apt/keyrings/docker.gpg
+  no_log: false
+
+- name: "Add Docker's repository to APT sources list"
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Install
+  ansible.builtin.apt:
+    name: "{{ docker_pkgs }}"
+    state: present
+    update_cache: yes
+  loop: "{{ docker_pkgs }}"
